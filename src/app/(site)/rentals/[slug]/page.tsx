@@ -1,19 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getVehicle, vehicles } from "@/data/vehicles";
+import { getVehicle, getVehicles } from "@/lib/content";
 import { Photo } from "@/components/Photo";
 import { BookingForm } from "@/components/BookingForm";
 import { ArrowLeft, Check } from "@/components/icons";
 import { rupiah } from "@/lib/format";
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const vehicles = await getVehicles();
   return vehicles.map((v) => ({ slug: v.slug }));
 }
 
 export async function generateMetadata({ params }: PageProps<"/rentals/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  const v = getVehicle(slug);
+  const v = await getVehicle(slug);
   return v ? { title: `${v.name} rental`, description: `${v.name} (${v.subtitle}) delivered to your villa in Bali.` } : {};
 }
 
@@ -22,7 +23,7 @@ const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 export default async function VehiclePage({ params, searchParams }: PageProps<"/rentals/[slug]">) {
   const { slug } = await params;
   const sp = await searchParams;
-  const vehicle = getVehicle(slug);
+  const vehicle = await getVehicle(slug);
   if (!vehicle) notFound();
 
   const canSelf = vehicle.pricePerDay !== null;
@@ -91,6 +92,7 @@ export default async function VehiclePage({ params, searchParams }: PageProps<"/
             <h2 id="book-title" className="font-display text-2xl font-semibold">Book this {vehicle.category === "scooter" ? "scooter" : "car"}</h2>
             <BookingForm
               kind={mode === "driver" ? "driver" : "rental"}
+              vehicleSlug={vehicle.slug}
               title={`${vehicle.name}${mode === "driver" ? " with driver" : ""}`}
               unitPrice={price}
               defaults={{ from: one(sp.from), to: one(sp.to), area: one(sp.area) }}

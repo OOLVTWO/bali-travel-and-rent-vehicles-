@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import { submitBooking } from "@/app/actions/booking";
 import { bookingMessage, waLink } from "@/lib/whatsapp";
 import { rupiah } from "@/lib/format";
 import { WhatsApp } from "@/components/icons";
@@ -13,6 +14,8 @@ type Props = {
   /** Harga satuan: per hari (rental/driver), per orang (tour), per paket (combo) */
   unitPrice: number | null;
   defaults?: { from?: string; to?: string; area?: string };
+  vehicleSlug?: string;
+  tourSlug?: string;
 };
 
 function daysBetween(from: string, to: string) {
@@ -21,7 +24,7 @@ function daysBetween(from: string, to: string) {
   return Math.max(1, Math.round(ms / 86_400_000));
 }
 
-export function BookingForm({ kind, title, unitPrice, defaults }: Props) {
+export function BookingForm({ kind, title, unitPrice, defaults, vehicleSlug, tourSlug }: Props) {
   const id = useId();
   const [from, setFrom] = useState(defaults?.from ?? "");
   const [to, setTo] = useState(defaults?.to ?? "");
@@ -29,6 +32,8 @@ export function BookingForm({ kind, title, unitPrice, defaults }: Props) {
   const [place, setPlace] = useState(defaults?.area ?? "");
   const [name, setName] = useState("");
   const [notes, setNotes] = useState("");
+  const [sending, setSending] = useState(false);
+  const [savedCode, setSavedCode] = useState<string | null>(null);
 
   const multiDay = kind === "rental" || kind === "driver";
   const days = multiDay ? daysBetween(from, to) : 1;
@@ -37,15 +42,44 @@ export function BookingForm({ kind, title, unitPrice, defaults }: Props) {
   const qtyLabel = kind === "tour" || kind === "combo" ? "Travellers" : kind === "driver" ? "Cars" : "Vehicles";
   const placeLabel = kind === "tour" ? "Pick-up from (hotel or villa)" : kind === "combo" ? "Where are you staying?" : "Deliver to (hotel or villa)";
 
-  function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const fields: [string, string | number | undefined][] = multiDay
-      ? [["Pick-up date", from], ["Return date", to]]
-      : [[kind === "combo" ? "Arrival date" : "Date", from]];
+    if (sending) return;
+    setSending(true);
+    // Buka tab dulu di dalam klik, biar gak diblokir popup blocker; URL WhatsApp diisi setelah booking tersimpan.
+    const tab = window.open("about:blank", "_blank");
+    let code: string | null = null;
+    try {
+      code = await submitBooking({
+        kind,
+        itemTitle: title,
+        vehicleSlug,
+        tourSlug,
+        startDate: from || undefined,
+        endDate: multiDay ? to || undefined : undefined,
+        quantity: qty,
+        guestName: name,
+        location: place,
+        notes,
+        estimatedTotal: total,
+      });
+    } catch {
+      code = null;
+    }
+    const fields: [string, string | number | undefined][] = code ? [["Booking code", code]] : [];
+    if (multiDay) fields.push(["Pick-up date", from], ["Return date", to]);
+    else fields.push([kind === "combo" ? "Arrival date" : "Date", from]);
     fields.push([qtyLabel, qty], [kind === "tour" ? "Pick-up" : "Location", place], ["Name", name], ["Notes", notes]);
     if (total !== null) fields.push(["Estimated total", rupiah(total)]);
-    const msg = bookingMessage(title, fields);
-    window.open(waLink(msg), "_blank", "noopener,noreferrer");
+    const url = waLink(bookingMessage(title, fields));
+    if (tab) {
+      tab.opener = null;
+      tab.location.href = url;
+    } else {
+      window.location.href = url;
+    }
+    setSavedCode(code);
+    setSending(false);
   }
 
   const field = "h-12 w-full rounded-xl border border-line bg-white px-3.5 text-[15px] text-ink placeholder:text-muted/70";
@@ -93,10 +127,15 @@ export function BookingForm({ kind, title, unitPrice, defaults }: Props) {
           <span className="text-xl font-bold tabular-nums">{rupiah(total)}</span>
         </div>
       )}
-      <button type="submit" className="flex h-13 items-center justify-center gap-2 rounded-xl bg-sun text-base font-bold text-ink hover:brightness-95">
+      <button type="submit" disabled={sending} className="flex h-13 items-center justify-center gap-2 rounded-xl bg-sun text-base font-bold text-ink hover:brightness-95 disabled:opacity-60">
         <WhatsApp size={20} />
-        Send booking on WhatsApp
+        {sending ? "Sending…" : "Send booking on WhatsApp"}
       </button>
+      {savedCode && (
+        <p role="status" className="rounded-xl bg-sea-soft px-4 py-3 text-center text-sm font-semibold text-sea-dark">
+          Booking saved as {savedCode}. Finish sending the message in WhatsApp.
+        </p>
+      )}
       <p className="text-center text-[13px] text-muted">We reply with availability and a payment link. Pay a small deposit, the rest at hand-over.</p>
     </form>
   );

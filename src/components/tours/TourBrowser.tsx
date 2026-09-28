@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { tourCategories, tours, type TourCategory } from "@/data/tours";
+import { tourCategories, type Tour, type TourCategory } from "@/data/tours";
 import { TourCard } from "@/components/cards";
 
-export function TourBrowser({ initial }: { initial: TourCategory | "all" }) {
+export function TourBrowser({ tours, initial }: { tours: Tour[]; initial: TourCategory | "all" }) {
   const [filter, setFilter] = useState<TourCategory | "all">(initial);
   const list = filter === "all" ? tours : tours.filter((t) => t.categories.includes(filter));
   const chip = (active: boolean) =>

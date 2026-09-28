@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { tourCategories, tours, type TourCategory } from "@/data/tours";
+import { tourCategories, type Tour, type TourCategory } from "@/data/tours";
 import { TourTile } from "@/components/cards";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { ArrowRight } from "@/components/icons";
 
-export function Experiences() {
+export function Experiences({ tours }: { tours: Tour[] }) {
   const [filter, setFilter] = useState<TourCategory | "all">("all");
   const list = (filter === "all" ? tours : tours.filter((t) => t.categories.includes(filter))).slice(0, 5);
 

@@ -1,10 +1,37 @@
 "use client";
 
 import { useId, useState } from "react";
+import type { PhotoInput } from "@/app/admin/actions";
 import { Photo } from "@/components/Photo";
 import { ChevronRight, Trash, Upload } from "@/components/icons";
+import { uploadPhoto } from "@/lib/upload";
 
-export type GalleryPhoto = { id: string; src: string; alt: string; position?: string; local?: boolean };
+/** `file` terisi = foto baru yang belum di-upload (pratinjau pakai blob URL). */
+export type GalleryPhoto = { id: string; src: string; alt: string; position?: string; storagePath?: string | null; file?: File };
+
+/** Upload semua foto baru ke Storage, lalu balikin daftar siap simpan + path yang baru di-upload. */
+export async function uploadPending(photos: GalleryPhoto[], folder: string, onProgress?: (done: number, total: number) => void) {
+  const pending = photos.filter((p) => p.file);
+  const uploaded: string[] = [];
+  const result: PhotoInput[] = [];
+  let done = 0;
+  onProgress?.(0, pending.length);
+  try {
+    for (const p of photos) {
+      if (p.file) {
+        const up = await uploadPhoto(p.file, folder);
+        uploaded.push(up.storagePath);
+        result.push({ url: up.url, storagePath: up.storagePath, alt: p.alt, position: p.position ?? null });
+        onProgress?.(++done, pending.length);
+      } else {
+        result.push({ url: p.src, storagePath: p.storagePath ?? null, alt: p.alt, position: p.position ?? null });
+      }
+    }
+  } catch (e) {
+    return { ok: false as const, error: e instanceof Error ? e.message : "Upload gagal.", uploaded };
+  }
+  return { ok: true as const, photos: result, uploaded };
+}
 
 type Props = {
   photos: GalleryPhoto[];
@@ -15,8 +42,8 @@ type Props = {
 };
 
 /**
- * Kelola galeri: tambah (upload lokal), hapus, geser urutan, jadikan foto pertama, dan isi alt text.
- * Mode demo: foto yang di-upload cuma tampil di browser ini, belum tersimpan ke server.
+ * Kelola galeri: tambah foto, hapus, geser urutan, jadikan foto pertama, dan isi alt text.
+ * Foto baru baru di-upload ke server saat tombol simpan di halaman induk ditekan.
  */
 export function GalleryManager({ photos, onChange, max = 12, firstLabel = "Cover" }: Props) {
   const id = useId();
@@ -30,7 +57,7 @@ export function GalleryManager({ photos, onChange, max = 12, firstLabel = "Cover
     const added = Array.from(files)
       .filter((f) => f.type.startsWith("image/"))
       .slice(0, room)
-      .map((f) => ({ id: `${f.name}-${f.size}-${Math.random().toString(36).slice(2, 7)}`, src: URL.createObjectURL(f), alt: "", local: true }));
+      .map((f) => ({ id: `${f.name}-${f.size}-${Math.random().toString(36).slice(2, 7)}`, src: URL.createObjectURL(f), alt: "", file: f }));
     if (added.length) onChange([...photos, ...added]);
   }
 
@@ -52,7 +79,7 @@ export function GalleryManager({ photos, onChange, max = 12, firstLabel = "Cover
 
   function remove(i: number) {
     const p = photos[i];
-    if (p.local) URL.revokeObjectURL(p.src);
+    if (p.file) URL.revokeObjectURL(p.src);
     onChange(photos.filter((_, k) => k !== i));
     setSelected((s) => Math.max(0, Math.min(s, photos.length - 2)));
   }
@@ -67,7 +94,7 @@ export function GalleryManager({ photos, onChange, max = 12, firstLabel = "Cover
         {photos.map((p, i) => (
           <li key={p.id} className={`group relative h-28 overflow-hidden rounded-xl ${i === selected ? "ring-[3px] ring-sea" : ""}`}>
             <button type="button" onClick={() => setSelected(i)} aria-label={`Pilih foto ${i + 1}`} aria-pressed={i === selected} className="absolute inset-0">
-              {p.local ? (
+              {p.file ? (
                 // eslint-disable-next-line @next/next/no-img-element -- pratinjau file lokal (blob URL)
                 <img src={p.src} alt="" className="h-full w-full object-cover" />
               ) : (
@@ -77,6 +104,7 @@ export function GalleryManager({ photos, onChange, max = 12, firstLabel = "Cover
             <span className={`pointer-events-none absolute top-2 left-2 rounded-md px-1.5 py-0.5 text-[11px] font-bold ${i === 0 ? "bg-ink text-white" : "bg-white/90 text-ink"}`}>
               {i === 0 ? firstLabel : i + 1}
             </span>
+            {p.file && <span className="pointer-events-none absolute right-2 bottom-2 rounded-md bg-sun px-1.5 py-0.5 text-[11px] font-bold text-ink">Baru</span>}
           </li>
         ))}
         {photos.length < max && (
@@ -124,7 +152,7 @@ export function GalleryManager({ photos, onChange, max = 12, firstLabel = "Cover
           </label>
         </div>
       )}
-      <p className="text-xs text-muted">{photos.length} / {max} foto · JPG atau WebP, minimal 1600 px sisi panjang.</p>
+      <p className="text-xs text-muted">{photos.length} / {max} foto · JPG, PNG atau WebP. Foto otomatis dikecilkan (maks. 2400 px) sebelum di-upload, jadi foto HP langsung aja.</p>
     </div>
   );
 }

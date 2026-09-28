@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { vehicles, type VehicleCategory } from "@/data/vehicles";
+import type { Vehicle, VehicleCategory } from "@/data/vehicles";
 import { VehicleCard } from "@/components/cards";
 import { Calendar } from "@/components/icons";
 
 type Props = {
+  vehicles: Vehicle[];
   initialType: VehicleCategory | "all";
   initialMode: "self" | "driver";
   from?: string;
@@ -13,7 +14,7 @@ type Props = {
   area?: string;
 };
 
-export function FleetBrowser({ initialType, initialMode, from, to, area }: Props) {
+export function FleetBrowser({ vehicles, initialType, initialMode, from, to, area }: Props) {
   const [type, setType] = useState<VehicleCategory | "all">(initialType);
   const [mode, setMode] = useState<"self" | "driver">(initialMode);
 

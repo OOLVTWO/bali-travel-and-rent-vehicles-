@@ -1,33 +1,47 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useState } from "react";
-import type { Tour } from "@/data/tours";
-import { GalleryManager, type GalleryPhoto } from "@/components/admin/GalleryManager";
+import { useId, useState, useTransition } from "react";
+import { saveTour } from "@/app/admin/actions";
+import { GalleryManager, uploadPending, type GalleryPhoto } from "@/components/admin/GalleryManager";
 import { Toggle } from "@/components/admin/Toggle";
 import { Card } from "@/components/admin/ui";
 import { Photo } from "@/components/Photo";
 import { Alert, CheckCircle, Eye } from "@/components/icons";
+import { removeUploaded } from "@/lib/upload";
 import { rupiah } from "@/lib/format";
 
 type Tab = "info" | "foto" | "harga";
 
-export function TourEditor({ tour }: { tour: Tour }) {
+export type TourEditorData = {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  summaryId: string;
+  duration: string;
+  priceFrom: number;
+  active: boolean;
+  featured: boolean;
+  bestSeller: boolean;
+  itinerary: { time: string; title: string }[];
+  photos: GalleryPhoto[];
+};
+
+export function TourEditor({ tour }: { tour: TourEditorData }) {
   const id = useId();
   const [tab, setTab] = useState<Tab>("foto");
   const [title, setTitle] = useState(tour.title);
   const [summary, setSummary] = useState(tour.summary);
-  const [summaryId, setSummaryId] = useState("");
+  const [summaryId, setSummaryId] = useState(tour.summaryId);
   const [duration, setDuration] = useState(tour.duration);
   const [price, setPrice] = useState(String(tour.priceFrom));
-  const [photos, setPhotos] = useState<GalleryPhoto[]>(() =>
-    tour.gallery.map((g, i) => ({ id: `${tour.slug}-${i}`, src: g.src, alt: g.alt, position: g.position })),
-  );
-  const [active, setActive] = useState(true);
-  const [onHome, setOnHome] = useState(!!tour.featured);
-  const [bestSeller, setBestSeller] = useState(tour.badge === "Best seller");
-  const [crossSell, setCrossSell] = useState(true);
-  const [saved, setSaved] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<GalleryPhoto[]>(tour.photos);
+  const [active, setActive] = useState(tour.active);
+  const [onHome, setOnHome] = useState(tour.featured);
+  const [bestSeller, setBestSeller] = useState(tour.bestSeller);
+  const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
+  const [pending, startTransition] = useTransition();
 
   const priceNum = Number(price);
   const checks = [
@@ -39,8 +53,31 @@ export function TourEditor({ tour }: { tour: Tour }) {
   const done = checks.filter((c) => c.ok).length;
   const cover = photos[0];
 
-  function save(publish: boolean) {
-    setSaved(publish ? "Dipublikasikan (demo, belum tersimpan ke database)" : "Draft tersimpan (demo)");
+  function save() {
+    setStatus(null);
+    startTransition(async () => {
+      const up = await uploadPending(photos, `tours/${tour.id}`, (done, total) => {
+        if (total) setStatus({ ok: true, text: `Upload foto ${done}/${total}…` });
+      });
+      if (!up.ok) {
+        await removeUploaded(up.uploaded);
+        setStatus({ ok: false, text: up.error });
+        return;
+      }
+      const res = await saveTour(
+        tour.id,
+        { title, summary, summaryId, duration, priceFrom: priceNum, active, featured: onHome, bestSeller },
+        up.photos,
+      );
+      if (!res.ok) {
+        await removeUploaded(up.uploaded);
+        setStatus({ ok: false, text: res.error });
+        return;
+      }
+      for (const p of photos) if (p.file) URL.revokeObjectURL(p.src);
+      setPhotos(up.photos.map((p, i) => ({ id: `${p.url}-${i}`, src: p.url, alt: p.alt, position: p.position ?? undefined, storagePath: p.storagePath })));
+      setStatus({ ok: true, text: active ? "Tersimpan & tampil di website." : "Tersimpan. Paket masih nonaktif, belum tampil di website." });
+    });
   }
 
   const tabBtn = (t: Tab, label: string) => (
@@ -67,15 +104,21 @@ export function TourEditor({ tour }: { tour: Tour }) {
           <Link href={`/tours/${tour.slug}`} target="_blank" className="flex h-11 items-center gap-2 rounded-xl border border-line bg-white px-4 text-sm font-bold">
             <Eye size={18} /> Lihat di website
           </Link>
-          <button type="button" onClick={() => save(false)} className="h-11 rounded-xl border border-line bg-white px-4 text-sm font-bold">Simpan draft</button>
-          <button type="button" onClick={() => save(true)} className="h-11 rounded-xl bg-sun px-4.5 text-sm font-bold text-ink">Publikasikan</button>
+          <button type="button" onClick={save} disabled={pending} className="h-11 rounded-xl bg-sun px-4.5 text-sm font-bold text-ink disabled:opacity-60">
+            {pending ? "Menyimpan…" : "Simpan perubahan"}
+          </button>
         </div>
       </div>
-      {saved && (
-        <p role="status" className="flex items-center gap-2 rounded-xl bg-sea-soft px-4 py-3 text-sm font-semibold text-sea-dark">
-          <CheckCircle size={18} /> {saved}
-        </p>
-      )}
+      {status &&
+        (status.ok ? (
+          <p role="status" className="flex items-center gap-2 rounded-xl bg-sea-soft px-4 py-3 text-sm font-semibold text-sea-dark">
+            <CheckCircle size={18} /> {status.text}
+          </p>
+        ) : (
+          <p role="alert" className="flex items-center gap-2 rounded-xl bg-bad-bg px-4 py-3 text-sm font-semibold text-bad">
+            <Alert size={18} /> Gagal menyimpan: {status.text}
+          </p>
+        ))}
 
       <div role="tablist" aria-label="Bagian" className="flex gap-1 overflow-x-auto border-b border-line">
         {tabBtn("info", "Info dasar")}
@@ -90,7 +133,7 @@ export function TourEditor({ tour }: { tour: Tour }) {
               <Card title="Foto cover" subtitle="Jadi header halaman tour dan kartu di homepage" action={<span className="text-xs text-muted">Min. 2400 × 1350 px · landscape</span>}>
                 <div className="relative h-64 overflow-hidden rounded-xl sm:h-72">
                   {cover ? (
-                    cover.local ? (
+                    cover.file ? (
                       // eslint-disable-next-line @next/next/no-img-element -- pratinjau file lokal (blob URL)
                       <img src={cover.src} alt="" className="h-full w-full object-cover" />
                     ) : (
@@ -102,7 +145,7 @@ export function TourEditor({ tour }: { tour: Tour }) {
                 </div>
                 <p className="text-[13px] text-muted">Foto cover = foto pertama di galeri. Pakai tombol &ldquo;Jadikan cover&rdquo; buat ganti.</p>
               </Card>
-              <Card title="Galeri" subtitle="Pilih foto buat geser urutan, hapus, atau isi keterangan.">
+              <Card title="Galeri" subtitle="Pilih foto buat geser urutan, hapus, atau isi keterangan. Jangan lupa klik Simpan perubahan.">
                 <GalleryManager photos={photos} onChange={setPhotos} />
               </Card>
             </>
@@ -137,11 +180,17 @@ export function TourEditor({ tour }: { tour: Tour }) {
                   <input id={`${id}-dur`} value={duration} onChange={(e) => setDuration(e.target.value)} className={field} />
                 </label>
               </div>
-              <ol className="flex flex-col gap-2 text-sm">
-                {tour.itinerary.map((s, i) => (
-                  <li key={i} className="flex gap-3 rounded-lg bg-mist px-3 py-2"><span className="w-12 font-bold tabular-nums text-sea">{s.time}</span>{s.title}</li>
-                ))}
-              </ol>
+              {tour.itinerary.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  <span className="text-[13px] font-bold">Itinerary</span>
+                  <ol className="flex flex-col gap-2 text-sm">
+                    {tour.itinerary.map((s, i) => (
+                      <li key={i} className="flex gap-3 rounded-lg bg-mist px-3 py-2"><span className="w-12 font-bold tabular-nums text-sea">{s.time}</span>{s.title}</li>
+                    ))}
+                  </ol>
+                  <span className="text-xs text-muted">Mau ubah itinerary? Kabari developer dulu, editornya nyusul.</span>
+                </div>
+              )}
             </Card>
           )}
         </div>
@@ -152,13 +201,12 @@ export function TourEditor({ tour }: { tour: Tour }) {
               <Toggle label="Aktif & bisa dibooking" checked={active} onChange={setActive} />
               <Toggle label="Tampil di homepage" checked={onHome} onChange={setOnHome} />
               <Toggle label={'Label "Best seller"'} checked={bestSeller} onChange={setBestSeller} />
-              <Toggle label="Tawarkan sewa motor setelah tour" checked={crossSell} onChange={setCrossSell} />
             </div>
           </Card>
           <Card title="Preview kartu">
             <div className="relative h-52 overflow-hidden rounded-2xl text-white">
-              {cover && !cover.local && <Photo src={cover.src} alt="" fill sizes="360px" position={cover.position} />}
-              {cover?.local && (
+              {cover && !cover.file && <Photo src={cover.src} alt="" fill sizes="360px" position={cover.position} />}
+              {cover?.file && (
                 // eslint-disable-next-line @next/next/no-img-element -- pratinjau file lokal (blob URL)
                 <img src={cover.src} alt="" className="absolute inset-0 h-full w-full object-cover" />
               )}

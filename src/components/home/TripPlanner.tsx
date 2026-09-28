@@ -3,15 +3,17 @@
 import Link from "next/link";
 import { useState } from "react";
 import { plannerStops } from "@/data/planner";
-import { getTour } from "@/data/tours";
-import { getVehicle } from "@/data/vehicles";
+import type { Tour } from "@/data/tours";
+import type { Vehicle } from "@/data/vehicles";
 import { rupiah } from "@/lib/format";
 import { Compass, MapPin, Scooter, Steering } from "@/components/icons";
 
-const scooter = getVehicle("honda-scoopy");
-const car = getVehicle("toyota-avanza");
+type Props = { tours: Tour[]; vehicles: Vehicle[]; headingLevel?: "h1" | "h2" };
 
-export function TripPlanner({ headingLevel = "h2" }: { headingLevel?: "h1" | "h2" }) {
+export function TripPlanner({ tours, vehicles, headingLevel = "h2" }: Props) {
+  // Motor termurah buat opsi "ride yourself", mobil + driver termurah buat opsi "car + driver"
+  const scooter = vehicles.filter((v) => v.category === "scooter" && v.pricePerDay !== null).sort((a, b) => (a.pricePerDay ?? 0) - (b.pricePerDay ?? 0))[0];
+  const car = vehicles.filter((v) => v.category === "car" && v.priceWithDriver !== null).sort((a, b) => (a.priceWithDriver ?? 0) - (b.priceWithDriver ?? 0))[0];
   const [selected, setSelected] = useState<string[]>(["ubud", "tegallalang", "kintamani"]);
   const [pax, setPax] = useState(2);
   const H = headingLevel;
@@ -19,7 +21,7 @@ export function TripPlanner({ headingLevel = "h2" }: { headingLevel?: "h1" | "h2
   const stops = plannerStops.filter((s) => selected.includes(s.id));
   const hours = stops.length ? Math.max(...stops.map((s) => s.rideHours)) + 0.5 * (stops.length - 1) : 0;
   const farthest = [...stops].sort((a, b) => b.rideHours - a.rideHours)[0];
-  const tour = farthest ? getTour(farthest.tourSlug) : undefined;
+  const tour = farthest ? tours.find((t) => t.slug === farthest.tourSlug) : undefined;
 
   const scooters = Math.ceil(pax / 2);
   const cars = Math.ceil(pax / 6);
@@ -39,7 +41,7 @@ export function TripPlanner({ headingLevel = "h2" }: { headingLevel?: "h1" | "h2
       title: "Ride yourself",
       text: `${scooters} ${scooters === 1 ? "scooter" : "scooters"}, route map, stop whenever you want.${hours ? ` About ${hours} h of riding.` : ""}`,
       price: selfPrice,
-      href: "/rentals/honda-scoopy",
+      href: scooter ? `/rentals/${scooter.slug}` : "/rentals",
     },
     {
       id: "driver" as const,
@@ -47,7 +49,7 @@ export function TripPlanner({ headingLevel = "h2" }: { headingLevel?: "h1" | "h2
       title: "Car + driver",
       text: `Private car for 10 hours${cars > 1 ? ` (${cars} cars)` : ""}. Aircon, water and a driver who knows the shortcuts.`,
       price: driverPrice,
-      href: "/rentals/toyota-avanza?mode=driver",
+      href: car ? `/rentals/${car.slug}?mode=driver` : "/rentals?mode=driver",
     },
     {
       id: "tour" as const,

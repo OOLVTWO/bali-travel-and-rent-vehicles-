@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { site } from "@/data/site";
-import { tours } from "@/data/tours";
+import { getTours } from "@/lib/content";
 import { LogoMark } from "@/components/icons";
 
-export function Footer() {
+export async function Footer() {
+  const tours = await getTours();
   return (
     <footer className="bg-deep px-4 pt-16 pb-10 text-sidebar-text sm:px-6 lg:px-16">
       <div className="mx-auto flex max-w-7xl flex-col gap-12">

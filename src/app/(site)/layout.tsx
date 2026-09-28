@@ -2,6 +2,9 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { WhatsAppFab } from "@/components/site/WhatsAppFab";
 
+// Konten dari database di-cache 5 menit; perubahan dari panel admin langsung memicu refresh.
+export const revalidate = 300;
+
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
     <>

@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { vehicles } from "@/data/vehicles";
+import type { Vehicle } from "@/data/vehicles";
 import { VehicleCard } from "@/components/cards";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { ArrowRight } from "@/components/icons";
 
-export function FleetSection() {
+export function FleetSection({ vehicles }: { vehicles: Vehicle[] }) {
   const [mode, setMode] = useState<"self" | "driver">("self");
   const list = mode === "driver" ? vehicles.filter((v) => v.priceWithDriver !== null) : vehicles;
 

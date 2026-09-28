@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { FleetBrowser } from "@/components/rentals/FleetBrowser";
 import { PageHeader } from "@/components/PageHeader";
+import { getVehicles } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Rent a scooter or car",
@@ -14,6 +15,7 @@ export default async function RentalsPage({ searchParams }: PageProps<"/rentals"
   const typeParam = one(sp.type);
   const type = typeParam === "scooter" || typeParam === "car" ? typeParam : "all";
   const mode = one(sp.mode) === "driver" ? "driver" : "self";
+  const vehicles = await getVehicles();
 
   return (
     <>
@@ -24,7 +26,7 @@ export default async function RentalsPage({ searchParams }: PageProps<"/rentals"
       />
       <section className="px-4 py-12 sm:px-6 lg:px-16 lg:py-16">
         <div className="mx-auto max-w-7xl">
-          <FleetBrowser key={`${type}-${mode}`} initialType={type} initialMode={mode} from={one(sp.from)} to={one(sp.to)} area={one(sp.area)} />
+          <FleetBrowser key={`${type}-${mode}`} vehicles={vehicles} initialType={type} initialMode={mode} from={one(sp.from)} to={one(sp.to)} area={one(sp.area)} />
         </div>
       </section>
     </>

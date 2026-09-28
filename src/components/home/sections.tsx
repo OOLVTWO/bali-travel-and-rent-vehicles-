@@ -4,8 +4,10 @@ import { reviews, site } from "@/data/site";
 import { combos } from "@/data/combos";
 import { articles } from "@/data/articles";
 import { testimonials } from "@/data/testimonials";
-import { vehicles } from "@/data/vehicles";
-import { tours } from "@/data/tours";
+import type { Vehicle } from "@/data/vehicles";
+import type { Tour } from "@/data/tours";
+import type { Slide } from "@/lib/content";
+import { HeroSlides } from "@/components/home/HeroSlides";
 import { Photo } from "@/components/Photo";
 import { ArticleCard, ComboCard, Stars, WayCard } from "@/components/cards";
 import { SectionHeading } from "@/components/site/SectionHeading";
@@ -14,10 +16,10 @@ import { ArrowRight, Chat, Check, Home, IdCard, Instagram, Shield, WhatsApp } fr
 import { rupiah } from "@/lib/format";
 import { waLink } from "@/lib/whatsapp";
 
-export function Hero() {
+export function Hero({ slides }: { slides: Slide[] }) {
   return (
     <section className="relative isolate overflow-hidden text-white">
-      <Photo src={img.hero} alt="Rice terraces near Ubud at sunset with Mount Agung behind" fill preload sizes="100vw" className="-z-10 object-cover" position="70% 50%" />
+      <HeroSlides slides={slides} />
       <div className="scrim-hero absolute inset-0 -z-10" />
       <div className="mx-auto flex max-w-7xl flex-col gap-12 px-4 pt-32 pb-10 sm:px-6 lg:min-h-[860px] lg:justify-between lg:px-16 lg:pt-44 lg:pb-14">
         <div className="flex max-w-[740px] flex-col gap-5.5">
@@ -71,10 +73,13 @@ export function TrustStrip() {
   );
 }
 
-export function ThreeWays() {
-  const scooterFrom = Math.min(...vehicles.flatMap((v) => (v.pricePerDay ? [v.pricePerDay] : [])));
-  const driverFrom = Math.min(...vehicles.flatMap((v) => (v.priceWithDriver ? [v.priceWithDriver] : [])));
-  const tourFrom = Math.min(...tours.map((t) => t.priceFrom));
+const minOf = (values: number[]) => (values.length ? Math.min(...values) : null);
+const fromLabel = (value: number | null, unit: string) => (value !== null ? `from ${rupiah(value)} / ${unit}` : "Ask for a price");
+
+export function ThreeWays({ vehicles, tours }: { vehicles: Vehicle[]; tours: Tour[] }) {
+  const scooterFrom = minOf(vehicles.flatMap((v) => (v.pricePerDay ? [v.pricePerDay] : [])));
+  const driverFrom = minOf(vehicles.flatMap((v) => (v.priceWithDriver ? [v.priceWithDriver] : [])));
+  const tourFrom = minOf(tours.map((t) => t.priceFrom));
   return (
     <section aria-labelledby="ways-title" className="px-4 py-20 sm:px-6 lg:px-16 lg:py-24">
       <div className="mx-auto flex max-w-7xl flex-col gap-12">
@@ -85,9 +90,9 @@ export function ThreeWays() {
           aside={<p className="max-w-[400px] text-[17px] leading-relaxed text-muted">Mix and match in one booking: a scooter for the beach days, a driver for the long ride up to Kintamani.</p>}
         />
         <div className="grid gap-6 lg:grid-cols-3">
-          <WayCard href="/rentals" image={img.terraces} tag="SELF DRIVE" title="Ride it yourself" text="Scooters and cars delivered to your door, with a free route map for every trip." price={`from ${rupiah(scooterFrom)} / day`} />
-          <WayCard href="/rentals?mode=driver" image={img.temple} tag="WITH A DRIVER" title="Sit back, we drive" text="A private car and an English-speaking local driver for 10 hours. Go wherever you like." price={`from ${rupiah(driverFrom)} / day`} />
-          <WayCard href="/tours" image={img.cliff} tag="GUIDED TOURS" title="Just show up" text="Curated day trips with transport, tickets and lunch sorted. Private or small group." price={`from ${rupiah(tourFrom)} / person`} />
+          <WayCard href="/rentals" image={img.terraces} tag="SELF DRIVE" title="Ride it yourself" text="Scooters and cars delivered to your door, with a free route map for every trip." price={fromLabel(scooterFrom, "day")} />
+          <WayCard href="/rentals?mode=driver" image={img.temple} tag="WITH A DRIVER" title="Sit back, we drive" text="A private car and an English-speaking local driver for 10 hours. Go wherever you like." price={fromLabel(driverFrom, "day")} />
+          <WayCard href="/tours" image={img.cliff} tag="GUIDED TOURS" title="Just show up" text="Curated day trips with transport, tickets and lunch sorted. Private or small group." price={fromLabel(tourFrom, "person")} />
         </div>
       </div>
     </section>

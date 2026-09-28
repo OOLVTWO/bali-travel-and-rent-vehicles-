@@ -4,17 +4,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { site } from "@/data/site";
-import { kpis } from "@/data/admin";
+import { signOut } from "@/app/admin/auth-actions";
 import { Calendar, Car, Chart, Compass, FileText, Gear, Gift, Grid, ImageIcon, LogoMark, Menu, Star, Tag, Ticket, User, Users, X } from "@/components/icons";
 
-type Item = { label: string; href?: string; Icon: typeof Grid; badge?: number };
+type Item = { label: string; href?: string; Icon: typeof Grid; badge?: "pending" };
 
 const groups: { title: string; items: Item[] }[] = [
   {
     title: "Operasional",
     items: [
       { label: "Dashboard", href: "/admin", Icon: Grid },
-      { label: "Booking", href: "/admin/bookings", Icon: Ticket, badge: kpis.needsAction },
+      { label: "Booking", href: "/admin/bookings", Icon: Ticket, badge: "pending" },
       { label: "Kalender armada", href: "/admin/schedule", Icon: Calendar },
       { label: "Armada", href: "/admin/fleet", Icon: Car },
       { label: "Driver & guide", Icon: Users },
@@ -50,7 +50,7 @@ function isActive(pathname: string, href: string) {
   return href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
 }
 
-export function AdminSidebar() {
+export function AdminSidebar({ email, pending }: { email: string; pending: number }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [lastPath, setLastPath] = useState(pathname);
@@ -74,7 +74,7 @@ export function AdminSidebar() {
               >
                 <Icon size={18} />
                 <span className="flex-1">{label}</span>
-                {badge ? <span className="flex h-5.5 min-w-5.5 items-center justify-center rounded-full bg-sun px-1.5 text-xs font-bold text-ink">{badge}</span> : null}
+                {badge === "pending" && pending > 0 ? <span className="flex h-5.5 min-w-5.5 items-center justify-center rounded-full bg-sun px-1.5 text-xs font-bold text-ink">{pending}</span> : null}
               </Link>
             ) : (
               <span key={label} className="flex h-10 items-center gap-3 rounded-[10px] px-3 text-sidebar-text/60" aria-disabled="true">
@@ -97,6 +97,19 @@ export function AdminSidebar() {
     </Link>
   );
 
+  const account = (
+    <div className="mt-auto flex items-center gap-3 rounded-xl bg-white/5 p-3">
+      <span className="flex h-9.5 w-9.5 shrink-0 items-center justify-center rounded-full bg-sun font-bold text-ink uppercase">{email.charAt(0)}</span>
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="truncate text-sm font-bold text-white" title={email}>{email}</span>
+        <span className="text-xs text-sidebar-text">Admin</span>
+      </span>
+      <form action={signOut}>
+        <button type="submit" className="h-9 rounded-lg px-2.5 text-xs font-bold text-sidebar-text hover:bg-white/10 hover:text-white">Keluar</button>
+      </form>
+    </div>
+  );
+
   return (
     <>
       <div className="sticky top-0 z-30 flex h-14 items-center justify-between bg-deep px-4 lg:hidden">
@@ -106,20 +119,15 @@ export function AdminSidebar() {
         </button>
       </div>
       {open && (
-        <div id="admin-drawer" className="fixed inset-x-0 top-14 bottom-0 z-30 overflow-y-auto bg-deep px-4 py-5 lg:hidden">
+        <div id="admin-drawer" className="fixed inset-x-0 top-14 bottom-0 z-30 flex flex-col gap-6 overflow-y-auto bg-deep px-4 py-5 lg:hidden">
           {nav}
+          {account}
         </div>
       )}
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col gap-6 overflow-y-auto bg-deep px-4 py-6 lg:flex">
         {brand}
         {nav}
-        <div className="mt-auto flex items-center gap-3 rounded-xl bg-white/5 p-3">
-          <span className="flex h-9.5 w-9.5 items-center justify-center rounded-full bg-sun font-bold text-ink">A</span>
-          <span className="flex flex-col">
-            <span className="text-sm font-bold text-white">Admin</span>
-            <span className="text-xs text-sidebar-text">Owner</span>
-          </span>
-        </div>
+        {account}
       </aside>
     </>
   );

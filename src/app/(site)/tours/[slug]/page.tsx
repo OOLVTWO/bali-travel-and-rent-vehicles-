@@ -1,29 +1,30 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getTour, tours } from "@/data/tours";
-import { getVehicle } from "@/data/vehicles";
+import { getTour, getTours, getVehicles } from "@/lib/content";
 import { Photo } from "@/components/Photo";
 import { BookingForm } from "@/components/BookingForm";
 import { TourGallery } from "@/components/tours/TourGallery";
 import { ArrowLeft, Check, CheckCircle, X } from "@/components/icons";
 import { rupiah } from "@/lib/format";
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const tours = await getTours();
   return tours.map((t) => ({ slug: t.slug }));
 }
 
 export async function generateMetadata({ params }: PageProps<"/tours/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  const t = getTour(slug);
+  const t = await getTour(slug);
   return t ? { title: t.title, description: t.summary } : {};
 }
 
 export default async function TourPage({ params }: PageProps<"/tours/[slug]">) {
   const { slug } = await params;
-  const tour = getTour(slug);
+  const [tour, vehicles] = await Promise.all([getTour(slug), getVehicles()]);
   if (!tour) notFound();
-  const scooter = getVehicle("honda-scoopy");
+  // Tawaran sewa motor: motor lepas kunci termurah
+  const scooter = vehicles.filter((v) => v.category === "scooter" && v.pricePerDay !== null).sort((a, b) => (a.pricePerDay ?? 0) - (b.pricePerDay ?? 0))[0];
 
   return (
     <>
@@ -119,7 +120,7 @@ export default async function TourPage({ params }: PageProps<"/tours/[slug]">) {
                 <h2 id="book-title" className="font-display text-2xl font-semibold">Book this tour</h2>
                 <span className="text-muted">from <strong className="text-ink">{rupiah(tour.priceFrom)}</strong> per person</span>
               </div>
-              <BookingForm kind="tour" title={tour.title} unitPrice={tour.priceFrom} />
+              <BookingForm kind="tour" title={tour.title} unitPrice={tour.priceFrom} tourSlug={tour.slug} />
             </aside>
           </div>
         </div>
