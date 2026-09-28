@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#4A2340"/>
+<stop offset=".35" stop-color="#A8424A"/>
+<stop offset=".62" stop-color="#E7784F"/>
+<stop offset=".8" stop-color="#F7B774"/>
+</linearGradient>
+<linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#B8524C"/>
+<stop offset="1" stop-color="#3E1F36"/>
+</linearGradient>
+</defs>
+<rect width="1600" height="720" fill="url(#sky)"/>
+<circle cx="1020" cy="580" r="72" fill="#FFD9A0"/>
+<rect y="580" width="1600" height="320" fill="url(#sea)"/>
+<path d="M1480 580 C1520 560 1560 556 1600 560 L1600 580Z" fill="#6A2E42"/>
+<path d="M940 600 L1100 600 M960 628 L1080 628 M975 656 L1065 656 M990 690 L1050 690 M1000 724 L1040 724" stroke="#FFD9A0" stroke-opacity=".6" stroke-width="6" stroke-linecap="round"/>
+<path d="M0 330 L180 320 C250 318 300 330 330 360 C360 400 380 520 430 900 L0 900Z" fill="#2A1622"/>
+<rect x="140" y="304" width="90" height="18" fill="#2A1622"/>
+<polygon points="150,304 220,304 206,290 164,290" fill="#2A1622"/>
+<polygon points="158,290 212,290 200,276 170,276" fill="#2A1622"/>
+<polygon points="166,276 204,276 195,262 175,262" fill="#2A1622"/>
+<rect x="183" y="250" width="4" height="12" fill="#2A1622"/>
+<polygon points="40,322 58,322 58,270 50,258 42,270" fill="#2A1622"/>
+<polygon points="72,322 90,322 88,270 80,258 72,270" fill="#2A1622"/>
+<path d="M330 880 C370 860 400 850 440 852 M360 800 C390 790 410 790 430 794" fill="none" stroke="#FFFFFF" stroke-opacity=".45" stroke-width="4" stroke-linecap="round"/>
+</svg>

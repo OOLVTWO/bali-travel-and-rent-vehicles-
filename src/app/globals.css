@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+/* Opsi A · Ocean & Sun */
+@theme {
+  --color-ink: #0d2b3e;
+  --color-body: #2c4a5c;
+  --color-muted: #45657a;
+  --color-deep: #0b3b55;
+  --color-sea: #0a7c86;
+  --color-sea-dark: #07606a;
+  --color-sea-soft: #ddf3f2;
+  --color-mist: #eef8f8;
+  --color-sun: #ffc940;
+  --color-sun-soft: #fff4d6;
+  --color-sky-soft: #e8f0fb;
+  --color-leaf-soft: #eaf6ee;
+  --color-line: #d5e5ea;
+  --color-line-soft: #e4eff2;
+  --color-wa: #25d366;
+  --color-admin-bg: #f2f8fa;
+  --color-sidebar-text: #c5d9e3;
+  --color-sidebar-label: #86a9bc;
+
+  /* chart & status */
+  --color-rental: #14a3a3;
+  --color-tour: #d2693a;
+  --color-warn-bg: #fcefd6;
+  --color-warn: #7a4f00;
+  --color-bad-bg: #fce8e6;
+  --color-bad: #a4231a;
+  --color-neutral-bg: #e6eef2;
+}
+
+@theme inline {
+  --font-sans: var(--font-jakarta), system-ui, sans-serif;
+  --font-display: var(--font-outfit), var(--font-jakarta), system-ui, sans-serif;
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  background: #ffffff;
+  color: var(--color-ink);
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-sea);
+  outline-offset: 2px;
+}
+
+.scrim-hero {
+  background:
+    linear-gradient(180deg, rgb(6 28 42 / 0.55) 0%, rgb(6 28 42 / 0) 24%),
+    linear-gradient(90deg, rgb(6 28 42 / 0.7) 0%, rgb(6 28 42 / 0.3) 52%, rgb(6 28 42 / 0) 78%);
+}
+
+.scrim-bottom {
+  background: linear-gradient(180deg, rgb(6 28 42 / 0) 35%, rgb(6 28 42 / 0.85) 100%);
+}
+
+.hatch {
+  background: repeating-linear-gradient(135deg, #d8d2c6 0 6px, #c9c2b6 6px 12px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#BFE2EC"/>
+<stop offset="1" stop-color="#EDF6F2"/>
+</linearGradient>
+<linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#2A9FB0"/>
+<stop offset="1" stop-color="#0C5F75"/>
+</linearGradient>
+</defs>
+<rect width="1600" height="900" fill="url(#sky)"/>
+<path d="M60 262 C120 240 190 236 260 250 L300 262Z" fill="#8FB3BC"/>
+<rect y="260" width="1600" height="640" fill="url(#sea)"/>
+<path d="M120 380 C200 372 280 384 360 378 M60 470 C160 460 260 474 360 466 M200 560 C300 552 400 564 500 556 M80 660 C180 650 280 664 380 656" fill="none" stroke="#FFFFFF" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/>
+<path d="M560 900 C600 840 660 800 740 780 C800 770 840 790 860 820 L880 900Z" fill="#58C4BD" opacity=".85"/>
+<path d="M600 900 C640 850 700 818 770 806 C800 802 820 812 830 830 C800 850 780 880 772 900Z" fill="#F2E3C2"/>
+<path d="M596 880 C636 836 690 806 756 794" fill="none" stroke="#FFFFFF" stroke-opacity=".8" stroke-width="4" stroke-linecap="round"/>
+<path d="M1600 240 L1600 900 L820 900 C860 800 880 700 900 620 C920 560 950 520 1000 496 C1060 468 1090 430 1130 380 C1170 330 1240 296 1330 280 C1430 262 1520 252 1600 240Z" fill="#C4A06E"/>
+<path d="M820 900 C860 800 880 700 900 620 C920 560 950 520 1000 496 L1040 540 C990 600 960 700 950 900Z" fill="#A9845A"/>
+<path d="M1000 496 C1060 468 1090 430 1130 380 C1170 330 1240 296 1330 280 C1430 262 1520 252 1600 240 L1600 330 C1500 330 1400 340 1320 360 C1230 384 1180 420 1140 470 C1100 520 1060 540 1040 540Z" fill="#5E9146"/>
+<path d="M1040 540 C1070 520 1110 490 1140 470 C1180 420 1230 384 1320 360 C1400 340 1500 330 1600 330 L1600 380 C1500 384 1410 396 1340 414 C1260 436 1210 470 1170 510 C1130 548 1090 566 1060 572Z" fill="#4C7C39"/>
+<path d="M1060 572 C1090 566 1130 548 1170 510 C1210 470 1260 436 1340 414 C1410 396 1500 384 1600 380 L1600 900 L960 900 C980 780 1010 660 1060 572Z" fill="#B38D5F"/>
+<path d="M1100 700 C1140 660 1200 640 1260 632 M1080 800 C1150 760 1230 744 1320 736" fill="none" stroke="#8E6B45" stroke-opacity=".5" stroke-width="4" stroke-linecap="round"/>
+<path d="M820 898 C850 860 880 840 920 836" fill="none" stroke="#FFFFFF" stroke-opacity=".7" stroke-width="4" stroke-linecap="round"/>
+</svg>
