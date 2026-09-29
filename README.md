@@ -82,7 +82,8 @@ Foto yang di-upload admin otomatis dikecilkan di browser (maks. 2400 px, WebP) s
 
 ## Yang wajib diganti sebelum live
 
-- [ ] **Nama brand, nomor WhatsApp, email, alamat, Instagram** → `src/data/site.ts`
+- [x] **Nomor WhatsApp**
+- [ ] **Nama brand, email, alamat, Instagram** → `src/data/site.ts`
 - [ ] **Harga** (masih contoh) → panel admin → Armada / Paket tour. Paket hemat masih di `src/data/combos.ts`.
 - [ ] **Foto**: upload lewat panel admin → Konten & foto. Foto armada wajib foto unit asli.
 - [ ] **Ulasan tamu asli** → `src/data/testimonials.ts` dan rating Google di `reviews` (`src/data/site.ts`). Selama kosong, bagian itu otomatis disembunyikan.

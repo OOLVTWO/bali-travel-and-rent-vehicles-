@@ -4,9 +4,9 @@ export const site = {
   name: "Jelajah Bali",
   shortName: "jelajah",
   tagline: "Explore Bali your way.",
-  // TODO: nomor WhatsApp bisnis, format internasional tanpa "+" atau spasi
-  whatsapp: "6281234567890",
-  whatsappDisplay: "+62 812-3456-7890",
+  // Nomor WhatsApp bisnis, format internasional tanpa "+" atau spasi
+  whatsapp: "6281239627764",
+  whatsappDisplay: "+62 812-3962-7764",
   // TODO: email & alamat asli
   email: "hello@example.com",
   address: "Jl. Contoh No. 1, Canggu, Bali",
