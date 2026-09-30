@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getVehicle, getVehicles } from "@/lib/content";
@@ -15,7 +16,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps<"/rentals/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const v = await getVehicle(slug);
-  return v ? { title: `${v.name} rental`, description: `${v.name} (${v.subtitle}) delivered to your villa in Bali.` } : {};
+  return v ? pageMeta({ title: `${v.name} rental`, description: `${v.name} (${v.subtitle}) delivered to your villa in Bali.`, path: `/rentals/${v.slug}`, ownImage: true }) : {};
 }
 
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);

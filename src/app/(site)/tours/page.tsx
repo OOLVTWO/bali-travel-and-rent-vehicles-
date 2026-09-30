@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { tourCategories, type TourCategory } from "@/data/tours";
 import { TourBrowser } from "@/components/tours/TourBrowser";
 import { PageHeader } from "@/components/PageHeader";
 import { getTours } from "@/lib/content";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Tours & activities",
   description: "Curated Bali day trips with transport, tickets and lunch sorted: Nusa Penida, Mount Batur, Uluwatu, Ubud and more.",
-};
+  path: "/tours",
+});
 
 export default async function ToursPage({ searchParams }: PageProps<"/tours">) {
   const sp = await searchParams;

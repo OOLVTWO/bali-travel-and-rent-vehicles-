@@ -15,13 +15,18 @@ const jakarta = Plus_Jakarta_Sans({
   weight: ["400", "500", "600", "700"],
 });
 
+const description =
+  "Rent a scooter or car, hire a private driver, or join a curated tour in Bali. One booking, one WhatsApp chat, delivered to your villa.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(site.url),
   title: {
     default: `${site.name} · Scooters, cars, drivers & tours in Bali`,
     template: `%s · ${site.name}`,
   },
-  description:
-    "Rent a scooter or car, hire a private driver, or join a curated tour in Bali. One booking, one WhatsApp chat, delivered to your villa.",
+  description,
+  openGraph: { type: "website", siteName: site.name, locale: "en_US", description },
+  twitter: { card: "summary_large_image", description },
 };
 
 export const viewport: Viewport = {

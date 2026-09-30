@@ -4,6 +4,8 @@ export const site = {
   name: "Jelajah Bali",
   shortName: "jelajah",
   tagline: "Explore Bali your way.",
+  // Alamat website (dipakai sitemap & preview link). Ganti lewat env NEXT_PUBLIC_SITE_URL kalau udah pakai domain sendiri.
+  url: (process.env.NEXT_PUBLIC_SITE_URL || "https://bali-travel-rental.vercel.app").replace(/\/+$/, ""),
   // Nomor WhatsApp bisnis, format internasional tanpa "+" atau spasi
   whatsapp: "6281239627764",
   whatsappDisplay: "+62 812-3962-7764",

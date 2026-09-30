@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { articles } from "@/data/articles";
 import { ArticleCard } from "@/components/cards";
 import { PageHeader } from "@/components/PageHeader";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Bali guide",
   description: "Local tips for riding, driving and day trips in Bali.",
-};
+  path: "/guide",
+});
 
 export default function GuidePage() {
   return (

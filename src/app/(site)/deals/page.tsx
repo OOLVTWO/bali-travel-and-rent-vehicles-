@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { combos } from "@/data/combos";
 import { Photo } from "@/components/Photo";
 import { BookingForm } from "@/components/BookingForm";
@@ -6,10 +7,11 @@ import { PageHeader } from "@/components/PageHeader";
 import { Check } from "@/components/icons";
 import { rupiah } from "@/lib/format";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Combo deals",
   description: "Airport pick-up, scooters, cars with driver and tours bundled in one booking.",
-};
+  path: "/deals",
+});
 
 export default function DealsPage() {
   return (

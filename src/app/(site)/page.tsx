@@ -3,6 +3,12 @@ import { FleetSection } from "@/components/home/FleetSection";
 import { TripPlanner } from "@/components/home/TripPlanner";
 import { BaliGuide, ComboDeals, CtaBand, GuestMoments, Hero, HowItWorks, ThreeWays, TrustStrip } from "@/components/home/sections";
 import { getHeroSlides, getTours, getVehicles } from "@/lib/content";
+import { pageMeta } from "@/lib/seo";
+
+export const metadata = pageMeta({
+  description: "Rent a scooter or car, hire a private driver, or join a curated tour in Bali. One booking, one WhatsApp chat, delivered to your villa.",
+  path: "/",
+});
 
 export default async function HomePage() {
   const [slides, tours, vehicles] = await Promise.all([getHeroSlides(), getTours(), getVehicles()]);

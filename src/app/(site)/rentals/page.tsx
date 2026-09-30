@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { FleetBrowser } from "@/components/rentals/FleetBrowser";
 import { PageHeader } from "@/components/PageHeader";
 import { getVehicles } from "@/lib/content";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Rent a scooter or car",
   description: "Scooters and cars delivered to your villa in Bali, or a private car with an English-speaking driver.",
-};
+  path: "/rentals",
+});
 
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 

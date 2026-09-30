@@ -24,6 +24,7 @@ Tanpa `.env.local`, website tamu tetap jalan pakai data contoh di `src/data/` (p
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://<project-ref>.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Publishable key (`sb_publishable_…`) dari Supabase → Project Settings → API Keys |
+| `NEXT_PUBLIC_SITE_URL` | Opsional. Alamat website buat sitemap & preview link. Default `https://bali-travel-rental.vercel.app`; isi kalau udah pakai domain sendiri (lalu Redeploy). |
 
 Cuma pakai publishable key. **Jangan** taruh secret/service-role key di website — semua akses dijaga Row Level Security di database.
 
@@ -77,6 +78,8 @@ Kalau belum diatur, link konfirmasi email bakal ngarah ke `localhost`.
 | Armada | Tambah/hapus unit (plat nomor), status, km, jadwal servis; ubah harga & tampil/sembunyikan model |
 | Paket tour → Edit | Nama, deskripsi EN/ID, harga, durasi, aktif/homepage/best seller, foto cover & galeri (upload, urutan, alt text) |
 | Konten & foto | Foto header homepage (slideshow maks. 5), foto per paket tour, foto armada |
+
+**SEO & preview link:** `/sitemap.xml` (otomatis berisi semua tour, armada & artikel), `robots.txt`, dan gambar preview 1200×630 buat tiap halaman (muncul pas link dibagikan di WhatsApp, Instagram, Facebook, X). Detail tour & rental punya gambar sendiri berisi nama + harga yang ikut ter-update dari panel admin. Desainnya di `src/lib/og.tsx`.
 
 Foto yang di-upload admin otomatis dikecilkan di browser (maks. 2400 px, WebP) sebelum dikirim, jadi foto HP bisa langsung dipakai. Perubahan dari admin muncul di website seketika; selain itu halaman publik di-refresh tiap 5 menit.
 

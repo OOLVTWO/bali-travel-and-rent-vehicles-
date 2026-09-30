@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { articles, getArticle } from "@/data/articles";
@@ -12,7 +13,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps<"/guide/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const a = getArticle(slug);
-  return a ? { title: a.title, description: a.excerpt } : {};
+  return a ? pageMeta({ title: a.title, description: a.excerpt, path: `/guide/${a.slug}`, ownImage: true }) : {};
 }
 
 export default async function ArticlePage({ params }: PageProps<"/guide/[slug]">) {

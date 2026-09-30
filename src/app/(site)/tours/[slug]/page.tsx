@@ -7,6 +7,7 @@ import { BookingForm } from "@/components/BookingForm";
 import { TourGallery } from "@/components/tours/TourGallery";
 import { ArrowLeft, Check, CheckCircle, X } from "@/components/icons";
 import { rupiah } from "@/lib/format";
+import { pageMeta } from "@/lib/seo";
 
 export async function generateStaticParams() {
   const tours = await getTours();
@@ -16,7 +17,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps<"/tours/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const t = await getTour(slug);
-  return t ? { title: t.title, description: t.summary } : {};
+  return t ? pageMeta({ title: t.title, description: t.summary, path: `/tours/${t.slug}`, ownImage: true }) : {};
 }
 
 export default async function TourPage({ params }: PageProps<"/tours/[slug]">) {

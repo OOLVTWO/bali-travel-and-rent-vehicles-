@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { TripPlanner } from "@/components/home/TripPlanner";
 import { getTours, getVehicles } from "@/lib/content";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Trip planner",
   description: "Compare riding yourself, hiring a driver or joining a tour for your Bali day trip.",
-};
+  path: "/planner",
+});
 
 export default async function PlannerPage() {
   const [tours, vehicles] = await Promise.all([getTours(), getVehicles()]);
