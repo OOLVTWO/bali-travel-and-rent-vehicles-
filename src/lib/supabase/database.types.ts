@@ -156,6 +156,75 @@ export type Database = {
           { foreignKeyName: "photos_tour_id_fkey"; columns: ["tour_id"]; isOneToOne: false; referencedRelation: "tours"; referencedColumns: ["id"] },
         ];
       };
+      reviews: {
+        Row: {
+          country: string | null;
+          created_at: string;
+          guest_name: string;
+          id: string;
+          published: boolean;
+          quote: string;
+          rating: number;
+          review_date: string | null;
+          service: string | null;
+          sort: number;
+          source: string;
+          updated_at: string;
+        };
+        Insert: {
+          country?: string | null;
+          created_at?: string;
+          guest_name: string;
+          id?: string;
+          published?: boolean;
+          quote: string;
+          rating?: number;
+          review_date?: string | null;
+          service?: string | null;
+          sort?: number;
+          source?: string;
+          updated_at?: string;
+        };
+        Update: {
+          country?: string | null;
+          created_at?: string;
+          guest_name?: string;
+          id?: string;
+          published?: boolean;
+          quote?: string;
+          rating?: number;
+          review_date?: string | null;
+          service?: string | null;
+          sort?: number;
+          source?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      site_settings: {
+        Row: {
+          google_rating: number | null;
+          google_review_count: number | null;
+          google_reviews_url: string | null;
+          id: number;
+          updated_at: string;
+        };
+        Insert: {
+          google_rating?: number | null;
+          google_review_count?: number | null;
+          google_reviews_url?: string | null;
+          id?: number;
+          updated_at?: string;
+        };
+        Update: {
+          google_rating?: number | null;
+          google_review_count?: number | null;
+          google_reviews_url?: string | null;
+          id?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       tours: {
         Row: {
           active: boolean;

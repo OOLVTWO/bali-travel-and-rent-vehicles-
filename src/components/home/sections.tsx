@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { img } from "@/data/images";
-import { reviews, site } from "@/data/site";
+import { site } from "@/data/site";
 import { combos } from "@/data/combos";
 import { articles } from "@/data/articles";
-import { testimonials } from "@/data/testimonials";
 import type { Vehicle } from "@/data/vehicles";
 import type { Tour } from "@/data/tours";
 import type { Slide } from "@/lib/content";
+import { sourceLabel, type Review, type ReviewSummary } from "@/lib/reviews";
 import { HeroSlides } from "@/components/home/HeroSlides";
 import { Photo } from "@/components/Photo";
 import { ArticleCard, ComboCard, Stars, WayCard } from "@/components/cards";
@@ -16,7 +16,10 @@ import { ArrowRight, Chat, Check, Home, IdCard, Instagram, Shield, WhatsApp } fr
 import { rupiah } from "@/lib/format";
 import { waLink } from "@/lib/whatsapp";
 
-export function Hero({ slides }: { slides: Slide[] }) {
+const ratingFmt = new Intl.NumberFormat("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const countFmt = new Intl.NumberFormat("en-US");
+
+export function Hero({ slides, rating }: { slides: Slide[]; rating: ReviewSummary | null }) {
   return (
     <section className="relative isolate overflow-hidden text-white">
       <HeroSlides slides={slides} />
@@ -34,13 +37,7 @@ export function Hero({ slides }: { slides: Slide[] }) {
           <p className="max-w-[600px] text-lg leading-relaxed text-white/90 sm:text-xl">
             Ride it yourself, hire a private driver, or join a curated tour. One booking, one WhatsApp chat, and everything delivered to your villa.
           </p>
-          {reviews.rating !== null && (
-            <a href={reviews.url ?? "#"} className="flex items-center gap-3.5 text-[15px] font-semibold">
-              <Stars />
-              <span>{reviews.rating} on Google</span>
-              {reviews.count && <span className="font-medium text-white/85">· {reviews.count} reviews</span>}
-            </a>
-          )}
+          {rating && <RatingLine rating={rating} />}
         </div>
         <SearchBox />
       </div>
@@ -170,7 +167,23 @@ const moments = [
   { src: img.temple, pos: "50% 50%" },
 ];
 
-export function GuestMoments() {
+function RatingLine({ rating, dark = false }: { rating: ReviewSummary; dark?: boolean }) {
+  const content = (
+    <>
+      <Stars rating={rating.rating} className={dark ? "text-[#f5a524]" : "text-sun"} />
+      <span>{ratingFmt.format(rating.rating)} on Google</span>
+      {rating.count !== null && <span className={`font-medium ${dark ? "text-muted" : "text-white/85"}`}>· {countFmt.format(rating.count)} reviews</span>}
+    </>
+  );
+  const cls = "flex flex-wrap items-center gap-x-3.5 gap-y-1 text-[15px] font-semibold";
+  return rating.url ? (
+    <a href={rating.url} target="_blank" rel="noopener noreferrer" className={`${cls} hover:underline`}>{content}</a>
+  ) : (
+    <span className={cls}>{content}</span>
+  );
+}
+
+export function GuestMoments({ reviews, rating }: { reviews: Review[]; rating: ReviewSummary | null }) {
   return (
     <section aria-labelledby="moments-title" className="bg-mist px-4 py-20 sm:px-6 lg:px-16 lg:py-24">
       <div className="mx-auto flex max-w-7xl flex-col gap-10">
@@ -191,18 +204,29 @@ export function GuestMoments() {
             </li>
           ))}
         </ul>
-        {testimonials.length > 0 && (
-          <div className="grid gap-6 lg:grid-cols-3">
-            {testimonials.map((t) => (
-              <figure key={t.name + t.quote.slice(0, 12)} className="flex flex-col gap-4 rounded-[20px] border border-line bg-white p-7">
-                <Stars className="text-[#f5a524]" />
-                <blockquote className="text-[17px] leading-relaxed">&ldquo;{t.quote}&rdquo;</blockquote>
-                <figcaption className="flex flex-col">
-                  <span className="font-bold">{t.name}</span>
-                  <span className="text-[13px] text-muted">{t.country} · via {t.source}</span>
-                </figcaption>
-              </figure>
-            ))}
+        {reviews.length > 0 && (
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h3 className="font-display text-2xl font-semibold">What our guests say</h3>
+              {rating && <RatingLine rating={rating} dark />}
+            </div>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {reviews.map((r) => (
+                <figure key={r.id} className="flex flex-col gap-4 rounded-[20px] border border-line bg-white p-7">
+                  <span className="flex items-center gap-2">
+                    <Stars rating={r.rating} className="text-[#f5a524]" />
+                    <span className="sr-only">{r.rating} out of 5 stars</span>
+                  </span>
+                  <blockquote className="flex-1 text-[17px] leading-relaxed">&ldquo;{r.quote}&rdquo;</blockquote>
+                  <figcaption className="flex flex-col">
+                    <span className="font-bold">{r.name}</span>
+                    <span className="text-[13px] text-muted">
+                      {[r.country, r.service, `via ${sourceLabel(r.source)}`].filter(Boolean).join(" · ")}
+                    </span>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
           </div>
         )}
       </div>

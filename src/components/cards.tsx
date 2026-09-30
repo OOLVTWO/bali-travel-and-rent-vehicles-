@@ -156,11 +156,13 @@ export function ArticleCard({ article }: { article: Article }) {
   );
 }
 
-export function Stars({ className = "text-sun" }: { className?: string }) {
+/** Bintang dekoratif; tulis nilai ratingnya sebagai teks di dekatnya. */
+export function Stars({ className = "text-sun", rating = 5 }: { className?: string; rating?: number }) {
+  const filled = Math.round(rating);
   return (
     <span className={`flex gap-0.5 ${className}`} aria-hidden="true">
       {Array.from({ length: 5 }).map((_, i) => (
-        <StarFilled key={i} size={16} />
+        <StarFilled key={i} size={16} className={i < filled ? undefined : "opacity-25"} />
       ))}
     </span>
   );

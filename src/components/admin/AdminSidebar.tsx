@@ -33,7 +33,7 @@ const groups: { title: string; items: Item[] }[] = [
     items: [
       { label: "Konten & foto", href: "/admin/content", Icon: ImageIcon },
       { label: "Artikel", Icon: FileText },
-      { label: "Ulasan tamu", Icon: Star },
+      { label: "Ulasan tamu", href: "/admin/reviews", Icon: Star },
     ],
   },
   {

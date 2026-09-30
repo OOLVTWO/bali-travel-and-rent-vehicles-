@@ -35,6 +35,7 @@ Skema ada di `supabase/migrations/` (urut sesuai nama file):
 1. `…_schema.sql` — tabel `vehicles`, `fleet_units`, `tours`, `photos`, `bookings`, `admin_emails`, fungsi `create_booking` (dipanggil form booking publik), RLS, bucket Storage `photos` (publik, maks. 10 MB).
 2. `…_seed_content.sql` — isi awal armada, tour & foto (sama dengan data contoh).
 3. `…_private_is_admin.sql` — fungsi cek admin dipindah ke schema `private`.
+4. `…_reviews.sql` — tabel `reviews` (ulasan tamu) & `site_settings` (rating Google).
 
 Keamanan singkatnya: tamu cuma bisa **baca** armada/tour yang aktif dan **bikin booking** lewat `create_booking`. Baca/ubah booking, unit, harga & foto cuma bisa kalau email login ada di tabel `admin_emails`.
 
@@ -78,6 +79,7 @@ Kalau belum diatur, link konfirmasi email bakal ngarah ke `localhost`.
 | Armada | Tambah/hapus unit (plat nomor), status, km, jadwal servis; ubah harga & tampil/sembunyikan model |
 | Paket tour → Edit | Nama, deskripsi EN/ID, harga, durasi, aktif/homepage/best seller, foto cover & galeri (upload, urutan, alt text) |
 | Konten & foto | Foto header homepage (slideshow maks. 5), foto per paket tour, foto armada |
+| Ulasan tamu | Rating Google (tampil di header), tambah/edit/sembunyikan ulasan, atur urutan (6 teratas tampil di homepage) |
 
 **SEO & preview link:** `/sitemap.xml` (otomatis berisi semua tour, armada & artikel), `robots.txt`, dan gambar preview 1200×630 buat tiap halaman (muncul pas link dibagikan di WhatsApp, Instagram, Facebook, X). Detail tour & rental punya gambar sendiri berisi nama + harga yang ikut ter-update dari panel admin. Desainnya di `src/lib/og.tsx`.
 
@@ -89,7 +91,7 @@ Foto yang di-upload admin otomatis dikecilkan di browser (maks. 2400 px, WebP) s
 - [ ] **Nama brand, email, alamat, Instagram** → `src/data/site.ts`
 - [ ] **Harga** (masih contoh) → panel admin → Armada / Paket tour. Paket hemat masih di `src/data/combos.ts`.
 - [ ] **Foto**: upload lewat panel admin → Konten & foto. Foto armada wajib foto unit asli.
-- [ ] **Ulasan tamu asli** → `src/data/testimonials.ts` dan rating Google di `reviews` (`src/data/site.ts`). Selama kosong, bagian itu otomatis disembunyikan.
+- [ ] **Ulasan tamu asli & rating Google** → panel admin → Ulasan tamu. Selama kosong, bagian itu otomatis disembunyikan.
 - [ ] **Site URL Supabase** diarahkan ke domain asli (lihat di atas).
 
 ## Struktur

@@ -4,6 +4,7 @@ import { vehicles as staticVehicles, type Vehicle } from "@/data/vehicles";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createPublicClient } from "@/lib/supabase/server";
 import type { Json, Tables } from "@/lib/supabase/database.types";
+import type { Review, ReviewSummary } from "@/lib/reviews";
 
 export type Slide = { src: string; alt: string; position?: string };
 
@@ -114,7 +115,34 @@ export async function getTour(slug: string): Promise<Tour | undefined> {
   return list.find((t) => t.slug === slug);
 }
 
-const staticSlides: Slide[] = [{ src: img.hero, alt: "Rice terraces near Ubud at sunset with Mount Agung behind", position: "70% 50%" }];
+/** Ulasan yang ditampilkan di website (maks. 6, urutan dari admin). */
+export async function getReviews(): Promise<Review[]> {
+  if (!isSupabaseConfigured) return [];
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("id, guest_name, country, rating, quote, source, service")
+    .eq("published", true)
+    .order("sort")
+    .order("created_at", { ascending: false })
+    .limit(6);
+  if (error) {
+    console.error("getReviews:", error.message);
+    return [];
+  }
+  return data.map((r) => ({ id: r.id, name: r.guest_name, country: r.country, rating: r.rating, quote: r.quote, source: r.source, service: r.service }));
+}
+
+/** Rating Google di header. null = belum diisi admin, baris rating disembunyikan. */
+export async function getReviewSummary(): Promise<ReviewSummary | null> {
+  if (!isSupabaseConfigured) return null;
+  const supabase = createPublicClient();
+  const { data, error } = await supabase.from("site_settings").select("google_rating, google_review_count, google_reviews_url").eq("id", 1).maybeSingle();
+  if (error || !data || data.google_rating === null) return null;
+  return { rating: Number(data.google_rating), count: data.google_review_count, url: data.google_reviews_url };
+}
+
+const staticSlides: Slide[] =[{ src: img.hero, alt: "Rice terraces near Ubud at sunset with Mount Agung behind", position: "70% 50%" }];
 
 export async function getHeroSlides(): Promise<Slide[]> {
   if (!isSupabaseConfigured) return staticSlides;

@@ -2,7 +2,7 @@ import { Experiences } from "@/components/home/Experiences";
 import { FleetSection } from "@/components/home/FleetSection";
 import { TripPlanner } from "@/components/home/TripPlanner";
 import { BaliGuide, ComboDeals, CtaBand, GuestMoments, Hero, HowItWorks, ThreeWays, TrustStrip } from "@/components/home/sections";
-import { getHeroSlides, getTours, getVehicles } from "@/lib/content";
+import { getHeroSlides, getReviewSummary, getReviews, getTours, getVehicles } from "@/lib/content";
 import { pageMeta } from "@/lib/seo";
 
 export const metadata = pageMeta({
@@ -11,10 +11,10 @@ export const metadata = pageMeta({
 });
 
 export default async function HomePage() {
-  const [slides, tours, vehicles] = await Promise.all([getHeroSlides(), getTours(), getVehicles()]);
+  const [slides, tours, vehicles, reviews, rating] = await Promise.all([getHeroSlides(), getTours(), getVehicles(), getReviews(), getReviewSummary()]);
   return (
     <>
-      <Hero slides={slides} />
+      <Hero slides={slides} rating={rating} />
       <TrustStrip />
       <ThreeWays vehicles={vehicles} tours={tours} />
       <Experiences tours={tours} />
@@ -26,7 +26,7 @@ export default async function HomePage() {
       </section>
       <ComboDeals />
       <HowItWorks />
-      <GuestMoments />
+      <GuestMoments reviews={reviews} rating={rating} />
       <BaliGuide />
       <CtaBand />
     </>

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { bookingKinds, bookingStatuses, channels, unitStatuses } from "@/lib/booking-meta";
+import { reviewSources } from "@/lib/reviews";
 import { supabaseUrl } from "@/lib/supabase/env";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -250,6 +251,113 @@ export async function saveHeroPhotos(photos: PhotoInput[]): Promise<ActionResult
     if (photos.length > 5) return fail("Maksimal 5 foto header.");
     const result = await replacePhotos("hero", null, photos);
     if (!result.ok) return result;
+    revalidatePath("/admin", "layout");
+    refreshSite();
+    return ok;
+  }) as Promise<ActionResult>;
+}
+
+// ---------------------------------------------------------------------------
+// Ulasan tamu & rating Google
+// ---------------------------------------------------------------------------
+
+export type ReviewInput = {
+  guestName: string;
+  country: string;
+  rating: number;
+  quote: string;
+  source: string;
+  service: string;
+  reviewDate: string;
+  published: boolean;
+};
+
+export async function saveReview(id: string | null, input: ReviewInput): Promise<ActionResult> {
+  return guard(async () => {
+    const { supabase } = await requireAdmin();
+    const guestName = String(input.guestName ?? "").trim();
+    const quote = String(input.quote ?? "").trim();
+    const rating = Math.round(Number(input.rating));
+    if (!guestName || !quote) return fail("Nama tamu dan isi ulasan wajib diisi.");
+    if (quote.length > 600) return fail("Ulasan maksimal 600 karakter. Potong bagian yang paling penting aja.");
+    if (!(rating >= 1 && rating <= 5)) return fail("Rating harus 1–5.");
+    if (!(reviewSources as readonly string[]).includes(input.source)) return fail("Sumber ulasan tidak dikenal.");
+    const row = {
+      guest_name: guestName.slice(0, 80),
+      country: String(input.country ?? "").trim().slice(0, 60) || null,
+      rating,
+      quote,
+      source: input.source,
+      service: String(input.service ?? "").trim().slice(0, 120) || null,
+      review_date: isoDate(input.reviewDate),
+      published: Boolean(input.published),
+    };
+    if (id) {
+      const { error } = await supabase.from("reviews").update(row).eq("id", id);
+      if (error) return fail(error.message);
+    } else {
+      // Ulasan baru masuk paling atas
+      const { data: first } = await supabase.from("reviews").select("sort").order("sort").limit(1).maybeSingle();
+      const { error } = await supabase.from("reviews").insert({ ...row, sort: (first?.sort ?? 1) - 1 });
+      if (error) return fail(error.message);
+    }
+    revalidatePath("/admin", "layout");
+    refreshSite();
+    return ok;
+  }) as Promise<ActionResult>;
+}
+
+export async function setReviewPublished(id: string, published: boolean): Promise<ActionResult> {
+  return guard(async () => {
+    const { supabase } = await requireAdmin();
+    const { error } = await supabase.from("reviews").update({ published }).eq("id", id);
+    if (error) return fail(error.message);
+    revalidatePath("/admin", "layout");
+    refreshSite();
+    return ok;
+  }) as Promise<ActionResult>;
+}
+
+export async function deleteReview(id: string): Promise<ActionResult> {
+  return guard(async () => {
+    const { supabase } = await requireAdmin();
+    const { error } = await supabase.from("reviews").delete().eq("id", id);
+    if (error) return fail(error.message);
+    revalidatePath("/admin", "layout");
+    refreshSite();
+    return ok;
+  }) as Promise<ActionResult>;
+}
+
+/** Simpan urutan baru (id paling atas = tampil paling dulu). */
+export async function reorderReviews(ids: string[]): Promise<ActionResult> {
+  return guard(async () => {
+    const { supabase } = await requireAdmin();
+    if (ids.length > 200) return fail("Terlalu banyak ulasan.");
+    const results = await Promise.all(ids.map((id, i) => supabase.from("reviews").update({ sort: i }).eq("id", id)));
+    const error = results.find((r) => r.error)?.error;
+    if (error) return fail(error.message);
+    revalidatePath("/admin", "layout");
+    refreshSite();
+    return ok;
+  }) as Promise<ActionResult>;
+}
+
+export async function saveGoogleRating(formData: FormData): Promise<ActionResult> {
+  return guard(async () => {
+    const { supabase } = await requireAdmin();
+    const ratingRaw = String(formData.get("google_rating") ?? "").trim().replace(",", ".");
+    const countRaw = String(formData.get("google_review_count") ?? "").trim();
+    const url = String(formData.get("google_reviews_url") ?? "").trim();
+    const rating = ratingRaw === "" ? null : Math.round(Number(ratingRaw) * 10) / 10;
+    if (rating !== null && !(rating >= 1 && rating <= 5)) return fail("Rating Google harus antara 1.0 dan 5.0.");
+    const count = countRaw === "" ? null : intOrNull(countRaw.replace(/\D/g, ""));
+    if (url && !/^https:\/\/\S+$/.test(url)) return fail("Link harus diawali https://");
+    const { error } = await supabase
+      .from("site_settings")
+      .update({ google_rating: rating, google_review_count: count, google_reviews_url: url || null })
+      .eq("id", 1);
+    if (error) return fail(error.message);
     revalidatePath("/admin", "layout");
     refreshSite();
     return ok;
